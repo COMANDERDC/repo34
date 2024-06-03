@@ -37,7 +37,8 @@ jobs:
           username: comanderdc
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker image to DockerHub
+        
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -66,7 +67,7 @@ jobs:
         with:
           registry: ghcr.io
           username: comanderdc
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.TOKEN_GITHUB }}
 
       - name: Push Docker image to GHCR
         uses: docker/build-push-action@v5
@@ -75,5 +76,4 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: |
-            ghcr.io/repo34/temp:${{ steps.meta.outputs.version }}
+          tags: ghcr.io/comanderdc/scanned-image:latest
