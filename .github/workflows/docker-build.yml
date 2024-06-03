@@ -1,5 +1,9 @@
 name: GHAction example
 
+permissions:
+  contents: read
+  packages: write
+
 on:
   workflow_dispatch:
   push:
@@ -8,13 +12,13 @@ on:
 
 jobs:
   ci_step:
-    name: Build, tag and push Docker image to DockerHub
+    name: Build, tag and push Docker image to DockerHub and GHCR
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Check out the source_repo
         uses: actions/checkout@v4
-      
+
       - name: Docker metadata definitions
         id: meta
         uses: docker/metadata-action@v5
@@ -37,7 +41,6 @@ jobs:
           username: comanderdc
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-        
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -46,43 +49,38 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           cache-from: |
-            type=registry,ref=comanderdc/temp 
+            type=registry,ref=comanderdc/temp:cache
           cache-to: |
-            type=registry,ref=comanderdc/temp  
+            type=registry,ref=comanderdc/temp:cache
           tags: ${{ steps.meta.outputs.tags }}
 
-      - name: Trivy Scan
-        uses: aquasecurity/trivy-action@0.20.0
+      - name: Scan Docker image for vulnerabilities using Docker Scout
+        id: docker-scout
+        uses: docker/scout-action@v1
         with:
-          image-ref: comanderdc/temp:${{ steps.meta.outputs.tags }}
-          output: trivy-results.sarif
-          exit-code: 0
-          ignore-unfixed: true
-          severity: CRITICAL,HIGH
-          scan-type: image
-        continue-on-error: true
+          command: cves
+          image: ${{ steps.meta.outputs.tags }}
+          only-severities: critical,high
+          format: table
 
-      - name: Push Docker image to GitHub Packages
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: github.com/comanderdc/${{ steps.meta.outputs.tags }}
-
+      - name: Fail if vulnerabilities are found
+        if: failure()
+        run: exit 1
+  
       - name: Login to GitHub Container Registry
+        if: success()
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: comanderdc
           password: ${{ secrets.TOKEN_GITHUB }}
 
-      - name: Push Docker image to GHCR
+      - name: Build and Push Docker image to GHCR
+        if: success()
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
+          file: ./Dockerfile1
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/comanderdc/scanned-image:latest
+          tags: ghcr.io/comanderdc/free-mag:latest
