@@ -1,5 +1,5 @@
 # Używamy oficjalnego obrazu Node.js jako bazowego
-FROM node:14-alpine3.18
+FROM node:14-alpine
 
 # Ustawienie katalogu roboczego w kontenerze
 WORKDIR /app
