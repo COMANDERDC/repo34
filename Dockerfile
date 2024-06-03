@@ -1,5 +1,5 @@
 # Używamy oficjalnego obrazu Node.js jako bazowego
-FROM node:14-alpine
+FROM node:14-alpine3.18
 
 # Ustawienie katalogu roboczego w kontenerze
 WORKDIR /app
@@ -8,7 +8,10 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instalowanie zależności
-RUN npm -g install npm@latest
+RUN npm install -g npm@latest
+
+# Aktualizacja systemu i instalacja najnowszej wersji OpenSSL
+RUN apk update && apk upgrade && apk add openssl
 
 # Kopiowanie reszty plików aplikacji
 COPY . .
