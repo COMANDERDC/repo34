@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instalowanie zależności
-RUN npm install --production
+RUN npm -g install npm@latest
 
 # Kopiowanie reszty plików aplikacji
 COPY . .
