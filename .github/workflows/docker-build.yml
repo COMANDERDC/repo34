@@ -76,4 +76,4 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/repo34comanderdc/omega-mgg:latest
+          tags: ghcr.io/comanderdc/${{ steps.meta.outputs.tags }}
